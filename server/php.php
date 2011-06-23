@@ -187,6 +187,15 @@ class qqFileUploader {
 				'The upload was cancelled, or server error encountered');
 		}
 	}
+	
+	/**
+	 * Use when returning json to fileuploader to encode chars to be handled with iframe correctly
+	 * @param string $json
+	 * @return string 
+	 */
+	public function encodeJson($json) {
+		return htmlspecialchars($json, ENT_NOQUOTES);
+	}
 
 }
 
