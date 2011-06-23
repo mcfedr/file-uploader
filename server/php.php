@@ -110,14 +110,14 @@ class qqFileUploader {
 	 * @param int $sizeLimit bytes
 	 * @return bool 
 	 */
-	public function checkServerSettings($sizeLimit) {
-		$postSize = $this->toBytes(ini_get('post_max_size'));
-		$uploadSize = $this->toBytes(ini_get('upload_max_filesize'));
+	public static function checkServerSettings($sizeLimit) {
+		$postSize = self::toBytes(ini_get('post_max_size'));
+		$uploadSize = self::toBytes(ini_get('upload_max_filesize'));
 
 		return!($postSize < $this->sizeLimit || $uploadSize < $this->sizeLimit);
 	}
 
-	private function toBytes($str) {
+	private static function toBytes($str) {
 		$val = trim($str);
 		$last = strtolower($str[strlen($str) - 1]);
 		switch ($last) {
@@ -140,7 +140,7 @@ class qqFileUploader {
 	public function handleUpload($uploadDirectory, $replaceOldFile = FALSE, array $allowedExtensions = array(), $sizeLimit = 10485760) {
 		$allowedExtensions = array_map("strtolower", $allowedExtensions);
 		
-		if(!$this->checkServerSettings($sizeLimit)) {
+		if(!self::checkServerSettings($sizeLimit)) {
 			return array('error' => "Check server settings to allow uploads up to $sizeLimit");
 		}
 		
@@ -193,7 +193,7 @@ class qqFileUploader {
 	 * @param string $json
 	 * @return string 
 	 */
-	public function encodeJson($json) {
+	public static function encodeJson($json) {
 		return htmlspecialchars($json, ENT_NOQUOTES);
 	}
 
