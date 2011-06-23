@@ -1,9 +1,18 @@
 <?php
 
 /**
+ * Common interface for uploaded files
+ */
+interface qqUploadedFile {
+	public function save($path);
+	public function getName();
+	public function getSize();
+}
+
+/**
  * Handle file uploads via XMLHttpRequest
  */
-class qqUploadedFileXhr {
+class qqUploadedFileXhr implements qqUploadedFile {
 
 	/**
 	 * Save the file to the specified path
@@ -45,7 +54,7 @@ class qqUploadedFileXhr {
 /**
  * Handle file uploads via regular form post (uses the $_FILES array)
  */
-class qqUploadedFileForm {
+class qqUploadedFileForm implements qqUploadedFile {
 
 	/**
 	 * Save the file to the specified path
@@ -75,18 +84,16 @@ class qqUploadedFileForm {
  */
 class qqFileUploader {
 
-	private $allowedExtensions = array();
-	private $sizeLimit = 10485760;
+	/**
+	 * The file object that is used to access the uplaoded file
+	 * @var qqUploadedFile 
+	 */
 	public $file;
 
-	public function __construct(array $allowedExtensions = array(), $sizeLimit = 10485760) {
-		$allowedExtensions = array_map("strtolower", $allowedExtensions);
-
-		$this->allowedExtensions = $allowedExtensions;
-		$this->sizeLimit = $sizeLimit;
-
-		$this->checkServerSettings();
-
+	/**
+	 * Create a new Uploader
+	 */
+	public function __construct() {
 		if (isset($_GET['qqfile'])) {
 			$this->file = new qqUploadedFileXhr();
 		}
@@ -98,7 +105,12 @@ class qqFileUploader {
 		}
 	}
 
-	public function checkServerSettings() {
+	/**
+	 * Use to check the php settings are ok for accepting files of $sizeLimit
+	 * @param int $sizeLimit bytes
+	 * @return bool 
+	 */
+	public function checkServerSettings($sizeLimit) {
 		$postSize = $this->toBytes(ini_get('post_max_size'));
 		$uploadSize = $this->toBytes(ini_get('upload_max_filesize'));
 
@@ -118,8 +130,20 @@ class qqFileUploader {
 
 	/**
 	 * Returns array('success'=>true) or array('error'=>'error message')
+	 * 
+	 * @param string $uploadDirectory
+	 * @param bool $replaceOldFile
+	 * @param array $allowedExtensions
+	 * @param int $sizeLimit
+	 * @return array 
 	 */
-	public function handleUpload($uploadDirectory, $replaceOldFile = FALSE) {
+	public function handleUpload($uploadDirectory, $replaceOldFile = FALSE, array $allowedExtensions = array(), $sizeLimit = 10485760) {
+		$allowedExtensions = array_map("strtolower", $allowedExtensions);
+		
+		if(!$this->checkServerSettings($sizeLimit)) {
+			return array('error' => "Check server settings to allow uploads up to $sizeLimit");
+		}
+		
 		if (!is_writable($uploadDirectory)) {
 			return array('error' => "Server error. Upload directory isn't writable.");
 		}
@@ -134,7 +158,7 @@ class qqFileUploader {
 			return array('error' => 'File is empty');
 		}
 
-		if ($size > $this->sizeLimit) {
+		if ($size > $sizeLimit) {
 			return array('error' => 'File is too large');
 		}
 
@@ -143,8 +167,8 @@ class qqFileUploader {
 		//$filename = md5(uniqid());
 		$ext = $pathinfo['extension'];
 
-		if ($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions)) {
-			$these = implode(', ', $this->allowedExtensions);
+		if ($allowedExtensions && !in_array(strtolower($ext), $allowedExtensions)) {
+			$these = implode(', ', $allowedExtensions);
 			return array('error' => 'File has an invalid extension, it should be one of ' . $these . '.');
 		}
 
