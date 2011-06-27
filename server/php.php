@@ -1,4 +1,13 @@
 <?php
+/**
+ * http://github.com/mcfedr/file-uploader
+ * 
+ * Multiple file upload component with progress-bar, drag-and-drop. 
+ * Parts © 2010 Andrew Valums ( andrew(at)valums.com ) 
+ * Parts © 2011 Fred Cox ( mcfedr(at)gmail.com ) 
+ * 
+ * Licensed under GNU GPL 3 or later
+ */  
 
 /**
  * Common interface for uploaded files
