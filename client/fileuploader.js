@@ -2477,7 +2477,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
             this._options.onComplete(id, name, response);
                         
         } else {                   
-            this._options.onComplete(id, name, {});
+            this._options.onComplete(id, name, false);
         }
                 
         this._files[id] = null;
